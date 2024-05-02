@@ -42,11 +42,12 @@ qtr = collect(dta.Column9);
 time = year + qtr./4;
 
 ### Define Grids
-grids = grids(; M = M, N = N, ν = ν, μ = μ, ρ = ρ, σ = σ)
-x = grids[:x]
-y = grids[:y]
-Π = grids[:Π]
-l = grids[:l]
+grid = grids(; M = M, N = N, ν = ν, μ = μ, ρ = ρ, σ = σ)
+x = grid[:x]
+y = grid[:y]
+Π = grid[:Π]
+F = grid[:F]
+l = grid[:l]
 
 ##Production and Surplus
 p = matchprod(x, y)
@@ -98,9 +99,19 @@ for t in 1:(burn+T)
 end
 
 ut = uxt * l
-
+u = mean(ut)
 ## Wage Dynamics
 wdt = wage_dens_path(Sx, uxt, wd, l, Ux, statet, T1)
+
+paidwagest = [
+    sum(wdt[t, :, :, 1] .* wd[:wmin]) + sum(wdt[t, :, :, 2] .* wd[:wmin]) for t in 1:length(prod)
+]
+
+avwagest = paidwagest./(1 .- ut[1:length(prod)])
+
+avwages = mean(avwagest)
+
+propmonopsony = sum(wdt[:, :, :, 1])/sum(wdt)
 
 ## Turnover Dynamics
 ft = [λ0 * sum((Sx[statet[t], m] > 0) * uxt[t, m] * l[m] for m in 1:M)/ut[t] for t in 1:T1]

@@ -2,6 +2,7 @@ module Robin2011_RepPackage
 
 using LinearAlgebra
 using Distributions
+using Base.Threads
 
 function matchprod(x::Vector, y::Vector; B::Number = 1, C::Number = 0.725767358913686)
     return y * (B * x .+ C)'
@@ -32,6 +33,9 @@ include("grids.jl")
 
 include("estCrit.jl")
 
+include("min_surplus.jl")
+
+export SminVFI
 export estCrit
 export grids
 export wage_dens_path
