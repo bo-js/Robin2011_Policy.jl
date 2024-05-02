@@ -12,11 +12,11 @@ function homeprod(x::Vector, y::Vector; B::Number = 1, C::Number = 0.72576735891
     return z0 .+ α * (matchprod(x, y; B, C) .- z0)
 end
 
-function SurplusVFI(p::Matrix, z::Matrix, Π::Matrix; β::Number = 0.946603693905558)
+function SurplusVFI(p::Matrix, z::Matrix, Π::Matrix;tol = 0.00001, β::Number = 0.946603693905558)
     S = (I(length(Π[1,:])) - β * Π )\(p - z)
     e = norm(S - max.(S, 0), 2)
 
-    while e > 0.00001
+    while e > tol
         S1 = S
         S = p - z + β * Π * max.(S, 0)
         e = norm(S - S1, 2)
