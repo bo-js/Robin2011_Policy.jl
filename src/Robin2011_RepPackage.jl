@@ -1,5 +1,7 @@
 module Robin2011_RepPackage
 
+using CSV
+using DataFrames
 using LinearAlgebra
 using Distributions
 using Base.Threads
@@ -35,6 +37,12 @@ include("estCrit.jl")
 
 include("min_surplus.jl")
 
+include("optCrit.jl")
+
+include("params_default.jl")
+
+export params_default
+export optCrit
 export SminVFI
 export estCrit
 export grids

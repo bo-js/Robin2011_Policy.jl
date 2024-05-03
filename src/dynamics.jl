@@ -107,7 +107,7 @@ function wage_dens_path(S::Matrix,Smin::Matrix, uxt::Matrix, wd::Dict, l::Vector
 
     # Define subsequent Periods Recurively
     for t in 2:T
-        for i in 1:N
+        @threads for i in 1:N
             if statet[t] == i # For wages being assigned in current period's state
                 
                 gt[t, i, :, 1] = [(S[statet[t], m] > max(Smin[statet[t], m], 0)) * (λ0 * uxt[t-1, m] * l[m] + (1 - δ) * (1 - λ1) * (
