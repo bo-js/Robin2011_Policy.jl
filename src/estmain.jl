@@ -78,21 +78,11 @@ x0 = [
 
 f = OptimizationFunction((b, _) -> estCrit(b; draw = draw, burn = burn, b0 = b0, T = T, τ = τ, α = α, r = r, N = N, M = M))
 
-function multistart(x0)
-    
-    for i in 1:3
-        prob = OptimizationProblem(f, x0)
+prob = OptimizationProblem(f, x0)
 
-        sol = solve(prob, Optim.NelderMead(); maxiters = 100000,reltol = 1e-4 )
+sol = solve(prob, NLopt.LN_NELDERMEAD(); maxiters = 100000,reltol = 1e-4 )
 
-        x0 = sol.u
-    end
-    
-    return x0
-
-end
-
-x1 = multistart(x0)
+x1 = sol.u
 
 writedlm("x1.txt", x1)
 
