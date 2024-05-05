@@ -10,7 +10,7 @@ function matchprod(x::Vector, y::Vector; B::Number = 1, C::Number = 0.7257673589
     return y * (B * x .+ C)'
 end
 
-function homeprod(x::Vector, y::Vector; B::Number = 1, C::Number = 0.725767358913686, α::Number = 0.75, z0::Number = 0.766752794650811)
+function homeprod(x::Vector, y::Vector; B::Number = 1, C::Number = 0.725767358913686, α::Number = 0.64, z0::Number = 0.766752794650811)
     return z0 .+ α * (matchprod(x, y; B, C) .- z0)
 end
 

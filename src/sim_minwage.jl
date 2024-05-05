@@ -7,17 +7,20 @@ using Robin2011_RepPackage
 M = 500
 N = 100
 
-r::Number = 0.05/4
+b = params_default()
+r = b.r
 
 ## Parameter Values - Change for when we estimate
-δ::Number = 0.041563759920623
-λ0::Number = 0.994544861919718
-λ1::Number = 0.119345383430366
-ρ = 0.913702234286476
-σ = 0.0257
-ν::Number = 2.019365636076711
-μ::Number = 5.786082109731152
-τ::Number = 0.5
+δ = b.δ
+λ0 = b.λ0
+λ1 = b.λ1
+ρ = b.ρ
+σ = b.σ
+ν = b.ν
+μ = b.μ
+α = b.α
+β = b.β
+τ = b.τ
 
 
 dta = CSV.read("/Users/bojs/Desktop/Robin 2011 Rep Files/matlab/USquarterly.csv", DataFrame, header = false)
@@ -52,9 +55,9 @@ l = grid[:l]
 ## Minimum Wage
 wmin = 0.75
 ##Production and Surplus
-p = matchprod(x, y)
-z = homeprod(x, y)
-S = SminVFI(wmin, p, z, Π)
+p = matchprod(x, y; B = B, C = C)
+z = homeprod(x, y; α = α, B = B, C = C, z0 = z0)
+S = SminVFI(wmin, p, z, Π; β = β, λ1 = λ1, λ0 = λ0, r = r)
 Sx = S.S
 Smin = S.Smin
 
@@ -63,7 +66,7 @@ Ux = (I(N) - Π./(1 + r))\(z + (λ1/(1+r)) .* Π * ((Sx .> max.(Smin, 0)) .* max
 
 
 ## Wages
-wd = WageVFI(Sx, Smin, Π, z)
+wd = WageVFI(Sx, Smin, Π, z; λ1 = λ1, β = β)
 
 ##Steady State
 ux = (δ/(δ + λ0)) .* (Sx .> max.(Smin, 0)) + (Sx .≤ max.(Smin, 0))
@@ -108,7 +111,7 @@ end
 ut = uxt * l
 u = mean(ut)
 ## Wage Dynamics
-wdt = wage_dens_path(Sx, Smin, uxt, wd, l, Ux, statet, T1)
+wdt = wage_dens_path(Sx, Smin, uxt, wd, l, Ux, statet, T1; λ0 = λ0, λ1 = λ1, δ = δ)
 
 paidwagest = [
     sum(wdt[t, :, :, 1] .* wd[:wmin]) + sum(wdt[t, :, :, 2] .* wd[:wmin]) for t in 1:length(prod)

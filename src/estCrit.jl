@@ -5,7 +5,7 @@ function estCrit(b; M = 500, N = 100, τ = 0.5, α = 0.5, r = 0.05/4, T = 5000, 
     ν = exp(b[1])
     μ = exp(b[2])
     δ = logit(b[3])
-    λ0 = logit(b[3])
+    λ0 = logit(b[4])
     ρ = tanh(b[5])
     σ = exp(b[6])
     z0 = exp(b[7])

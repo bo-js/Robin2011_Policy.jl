@@ -2,6 +2,9 @@ using Robin2011_RepPackage
 using CSV
 using DataFrames
 using Distributions
+using DelimitedFiles
+using Optimization
+using OptimizationNLopt, OptimizationOptimJL
 
 # Initialisation
 global N = 150
@@ -43,15 +46,16 @@ logit = x -> 1/(1 + exp(x))
 
 b = parse.(Float64, readlines("x0.txt"))
 
-ν = exp(b[1])
-μ = exp(b[2])
-δ = logit(b[3])
-λ0 = logit(b[3])
-ρ = tanh(b[5])
-σ = exp(b[6])
-z0 = exp(b[7])
-C = exp(b[8])
-B = 1
+params_in = Dict(
+    :ν  => exp(b[1]),
+    :μ => exp(b[2]),
+    :δ => logit(b[3]),
+    :λ0 => logit(b[4]),
+    :ρ => tanh(b[5]),
+    :σ => exp(b[6]),
+    :z0 => exp(b[7]),
+    :C => exp(b[8])
+)
 
 T = 5000;
 burn = 1000;
@@ -61,6 +65,44 @@ draw = rand(burn+T, 1)
 
 loginv = x -> log(1/x - 1)
 
-x0 = [log(ν), log(μ), loginv(δ), loginv(λ0), atanh(ρ), log(σ), log(z0), log(C)]
+x0 = [
+    log(params_in[:ν]),
+    log(params_in[:μ]),
+    loginv(params_in[:δ]),
+    loginv(params_in[:λ0]),
+    atanh(params_in[:ρ]),
+    log(params_in[:σ]),
+    log(params_in[:z0]),
+    log(params_in[:C])
+]
 
-estCrit(b; burn = burn)
+f = OptimizationFunction((b, _) -> estCrit(b; draw = draw, burn = burn, b0 = b0, T = T, τ = τ, α = α, r = r, N = N, M = M))
+
+function multistart(x0)
+    
+    for i in 1:3
+        prob = OptimizationProblem(f, x0)
+
+        sol = solve(prob, Optim.NelderMead(); maxiters = 100000,reltol = 1e-4 )
+
+        x0 = sol.u
+    end
+    
+    return x0
+
+end
+
+x1 = multistart(x0)
+
+writedlm("x1.txt", x1)
+
+params_opt = Dict(
+    :ν  => exp(x1[1]),
+    :μ => exp(x1[2]),
+    :δ => logit(x1[3]),
+    :λ0 => logit(x1[4]),
+    :ρ => tanh(x1[5]),
+    :σ => exp(x1[6]),
+    :z0 => exp(x1[7]),
+    :C => exp(x1[8])
+)
