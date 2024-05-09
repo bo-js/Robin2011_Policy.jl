@@ -27,6 +27,22 @@ function SurplusVFI(p::Matrix, z::Matrix, Π::Matrix;tol = 0.00001, β::Number =
     return S
 end
 
+function states(draw, Π)
+    T1 = length(draw)
+    statet = zeros(Int64, T1)
+    i = Integer(round(length(Π[1, :])/2))
+    statet[1] = i
+
+    for t = 1:T1
+        i = min(1 + sum(draw[t] .> cumsum(Π[i, :])), length(Π[1, :]))
+        statet[t] = i
+    end
+
+    return statet
+end
+
+include("deficit.jl")
+
 include("wages.jl")
 
 include("dynamics.jl")
@@ -41,6 +57,10 @@ include("optCrit.jl")
 
 include("params_default.jl")
 
+include("uiyx.jl")
+
+export states
+export uiyx
 export params_default
 export optCrit
 export SminVFI

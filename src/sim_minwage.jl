@@ -4,8 +4,8 @@ using Distributions
 using LinearAlgebra
 using Robin2011_RepPackage
 
-M = 500
-N = 100
+M = 50
+N = 50
 
 b = params_default()
 r = b.r
@@ -21,6 +21,9 @@ r = b.r
 α = b.α
 β = b.β
 τ = b.τ
+C = b.C
+z0 = b.z0
+B = b.B
 
 
 dta = CSV.read("/Users/bojs/Desktop/Robin 2011 Rep Files/matlab/USquarterly.csv", DataFrame, header = false)
@@ -129,3 +132,13 @@ propmonopsony = sum(wdt[:, :, :, 1])/sum(wdt)
 ft = [λ0 * sum((Sx[statet[t], m] > max.(Smin[statet[t], m], 0)) * uxt[t, m] * l[m] for m in 1:M)/ut[t] for t in 1:T1]
 qt = [τ * λ1 * (1 - δ) * sum((Sx[statet[t], m] > max.(Smin[statet[t], m], 0)) * (1 - uxt[t, m]) * l[m] for m in 1:M)/(1 - ut[t]) for t in 1:T1]
 st = [δ + (1 - δ) * sum((Sx[statet[t], m] ≤ max.(Smin[statet[t], m], 0)) * (1 - uxt[t, m]) * l[m] for m in 1:M)/(1 - ut[t]) for t in 1:T1]
+
+# Whether min-wage is paid
+
+wagespaidmin = (sum(wdt[:, :, :, 1]; dims = 1)[1, :, :] .> 0)
+wagespaidmax = (sum(wdt[:, :, :, 2]; dims = 1)[1, :, :] .> 0)
+wmin = wd[:wmin]
+wmax = wd[:wmax]
+eqminwage = minimum(wmin[wagespaidmin])
+eqminmaxwage = minimum(wmax[wagespaidmax])
+
