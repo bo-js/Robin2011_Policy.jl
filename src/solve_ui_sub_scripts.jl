@@ -40,3 +40,6 @@ function find_tax_sub(sub)
     return tax
 end
 
+sub_range = LinRange(0.001, 0.1, 100)
+
+sub_taxes = find_tax_sub.(sub_range)
