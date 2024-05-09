@@ -7,8 +7,8 @@ using Optimization
 using OptimizationNLopt, OptimizationOptimJL
 
 # Initialisation
-global N = 150
-global M = 500
+global N = 50
+global M = 50
 
 ## External Parameters
 global r = 0.05/4;
@@ -73,12 +73,19 @@ x0 = [
     atanh(params_in[:ρ]),
     log(params_in[:σ]),
     log(params_in[:z0]),
-    log(params_in[:C])
+    log(params_in[:C]),
+    0.0
 ]
+
+lower = zeros(length(x0))
+lower[1:8] .= -Inf
+
+upper = zeros(length(x0))
+upper = Inf
 
 f = OptimizationFunction((b, _) -> estCrit(b; draw = draw, burn = burn, b0 = b0, T = T, τ = τ, α = α, r = r, N = N, M = M))
 
-prob = OptimizationProblem(f, x0)
+prob = OptimizationProblem(f, x0; lb = lower, ub = upper)
 
 sol = solve(prob, NLopt.LN_NELDERMEAD(); maxiters = 100000,reltol = 1e-4 )
 
@@ -94,5 +101,6 @@ params_opt = Dict(
     :ρ => tanh(x1[5]),
     :σ => exp(x1[6]),
     :z0 => exp(x1[7]),
-    :C => exp(x1[8])
+    :C => exp(x1[8]),
+    :wmin => x1[9]
 )

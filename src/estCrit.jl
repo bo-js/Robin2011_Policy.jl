@@ -10,6 +10,13 @@ function estCrit(b; M = 500, N = 100, τ = 0.5, α = 0.5, r = 0.05/4, T = 5000, 
     σ = exp(b[6])
     z0 = exp(b[7])
     C = exp(b[8])
+    
+    if length(b) == 9
+        wmin = b[9]
+    else
+        wmin = 0.0
+    end
+
     B = 1
 
     g = grids(; M = M, N = N, ν = ν, μ = μ, ρ = ρ, σ = σ)
@@ -24,15 +31,14 @@ function estCrit(b; M = 500, N = 100, τ = 0.5, α = 0.5, r = 0.05/4, T = 5000, 
 
     β = (1 - δ)/(1 + r)
 
-    Ux = (I(N) - Π./(1 + r))\z
+    S = SminVFI(wmin, p, z, Π; β = β)
+    Sx = S.S
+    Smin = S.Smin
 
-    Sx = SurplusVFI(p, z, Π; β = β)
-
-    S = max.(Sx, 0)*l # Aggregate Surplus
-    L = (Sx .> 0)*l
+    L = (Sx .> max.(0,Smin))*l
 
     ## Steady State
-    ux = (δ/(δ + λ0)).*(Sx .> 0) .+ (Sx .≤ 0)
+    ux = (δ/(δ + λ0)).*(Sx .> max.(0,Smin)) .+ (Sx .≤ max.(0, Smin))
     u = 1 .- δ .* L ./ (δ + λ0)
 
     ## Dynamics
@@ -41,26 +47,29 @@ function estCrit(b; M = 500, N = 100, τ = 0.5, α = 0.5, r = 0.05/4, T = 5000, 
     yt = y[i] * ones(T+burn)
     uxt = repeat(ux[i, :]', T+burn+1, 1)
     Sxt = repeat(Sx[i, :]', T+burn+1, 1)
+    Smt = repeat(Smin[i, :]', T+burn+1, 1)
 
     for t = 1:T+burn
         i = min(1 + sum(draw[t] .> cumsum(Π[i, :])), N)
         yt[t] = y[i]
         Sxt[t, :] = Sx[i, :]
-        uxt[t+1, :] = 1 .- (Sxt[t, :] .> 0) .* ((1 - δ) .* (1 .- uxt[t, :]) + λ0 .* uxt[t, :])
+        Smt[t, :] = Smin[i, :]
+        uxt[t+1, :] = 1 .- (Sxt[t, :] .> max.(0,Smin[i, :])) .* ((1 - δ) .* (1 .- uxt[t, :]) + λ0 .* uxt[t, :])
     end
 
     sel = burn+1:T+burn;
     yt = yt[sel]
     uxt = uxt[sel, :]
     Sxt = Sxt[sel, :]
+    Smt = Smt[sel, :]
     ut = uxt * l
 
     # Exit Rate from Unemployment
-    ft = (((Sxt .> 0).*uxt) * l) .* λ0 ./ut
+    ft = (((Sxt .> max.(0,Smt)).*uxt) * l) .* λ0 ./ut
     # Quit Rate
-    qt = (((Sxt .> 0).*(1 .- uxt))*l) .* (0.12 * λ0 * τ) ./(1 .- ut)
+    qt = (((Sxt .> max.(0,Smt)).*(1 .- uxt))*l) .* (0.12 * λ0 * τ) ./(1 .- ut)
     # Layoff Rate
-    sxt = (1 .- (Sxt .> 0).*(1 - δ)).*(1 .- uxt)
+    sxt = (1 .- (Sxt .> max.(0,Smt)).*(1 - δ)).*(1 .- uxt)
     st = (sxt * l)./(1 .- ut)
     # Employment
     ext = repeat(l', T, 1).*(1 .- uxt)
