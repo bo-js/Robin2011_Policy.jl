@@ -1,4 +1,4 @@
-using Robin2011_RepPackage, Roots, Random, StatsBase
+using Robin2011_RepPackage, Roots, Random, StatsBase, DelimitedFiles
 
 T = 5000
 burn = 1000
@@ -25,6 +25,9 @@ end
 
 ui_taxes = find_tax_ui.(ui_range)
 
+writedlm("output/ui_grid.txt", ui_range)
+writedlm("output/ui_taxes.txt", ui_taxes)
+
 Π = g[:Π]
 
 statet = states(draw, Π)
@@ -41,5 +44,6 @@ function find_tax_sub(sub)
 end
 
 sub_range = LinRange(0.001, 0.1, 100)
-
+writedlm("output/sub_grid.txt", sub_range)
 sub_taxes = find_tax_sub.(sub_range)
+writedlm("output/sub_taxes.txt", sub_taxes)
