@@ -80,6 +80,16 @@ function policy_sims_sub(sub, subtax; wmin = 0, tol = 0.0001)
     wageincome_med = zeros(length(sub))
     wageincome_high = zeros(length(sub))
 
+    avmonopwage = zeros(length(sub))
+    avmonopwage_low = zeros(length(sub))
+    avmonopwage_med = zeros(length(sub))
+    avmonopwage_high = zeros(length(sub))
+
+    avhighwage = zeros(length(sub))
+    avhighwage_low = zeros(length(sub))
+    avhighwage_med = zeros(length(sub))
+    avhighwage_high = zeros(length(sub))
+
 
     @threads for i in 1:lastindex(sub)
         sim = optCrit([y[statelow+1], sub[i]], zeros(N, M), wmin, subtax[i];tol = tol, M = M, N = N, T = T, burn = burn, draw = draw, b = b, grid = g, fullinfo = true)
@@ -116,11 +126,22 @@ function policy_sims_sub(sub, subtax; wmin = 0, tol = 0.0001)
         nfullsurp_med[i] = sum(wdt[med, :, :, 2])
         nfullsurp_high[i] = sum(wdt[high, :, :, 2])
 
-        avwages[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T)/T
-        avwages_low[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statet[t] ≤ statelow)/sum(low)
-        avwages_med[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statelow < statet[t] ≤ statehigh)/sum(med)
-        avwages_high[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statehigh < statet[t])/sum(high)
+        avwages[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, :]) for t in 1:T)/T
+        avwages_low[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, :]) for t in 1:T if statet[t] ≤ statelow)/sum(low)
+        avwages_med[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, :]) for t in 1:T if statelow < statet[t] ≤ statehigh)/sum(med)
+        avwages_high[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, :]) for t in 1:T if statehigh < statet[t])/sum(high)
         
+        avmonopwage[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin])/sum(wdt[t, :, :, 1]) for t in 1:T)/T
+        avmonopwage_low[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin])/sum(wdt[t, :, :, 1]) for t in 1:T if statet[t] ≤ statelow)/sum(low)
+        avmonopwage_med[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin])/sum(wdt[t, :, :, 1]) for t in 1:T if statelow < statet[t] ≤ statehigh)/sum(med)
+        avmonopwage_high[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin])/sum(wdt[t, :, :, 1]) for t in 1:T if statehigh < statet[t])/sum(high)
+        
+        avhighwage[i] = sum(sum(wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, 2]) for t in 1:T)/T
+        avhighwage_low[i] = sum(sum(wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, 2]) for t in 1:T if statet[t] ≤ statelow)/sum(low)
+        avhighwage_med[i] = sum(sum(wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, 2]) for t in 1:T if statelow < statet[t] ≤ statehigh)/sum(med)
+        avhighwage_high[i] = sum(sum(wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, 2]) for t in 1:T if statehigh < statet[t])/sum(high)
+
+
         mean_u[i] = mean(ut)
         mean_u_low[i] = mean(ut[low])
         mean_u_med[i] = mean(ut[med])
@@ -165,6 +186,16 @@ function policy_sims_sub(sub, subtax; wmin = 0, tol = 0.0001)
         :avwages_low => avwages_low,
         :avwages_med => avwages_med,
         :avwages_high => avwages_high,
+
+        :avmonopwage => avmonopwage,
+        :avmonopwage_low => avmonopwage_low,
+        :avmonopwage_med => avmonopwage_med,
+        :avmonopwage_high => avmonopwage_high,
+
+        :avhighwage => avhighwage,
+        :avhighwage_low => avhighwage_low,
+        :avhighwage_med => avhighwage_med,
+        :avhighwage_high => avhighwage_high,
         
         :mean_u => mean_u,
         :mean_u_low => mean_u_low,
@@ -233,6 +264,15 @@ pavwages = plot(subs, d[:avwages]; title = "Mean Wage", xlabel = "Subsidy in Low
 pavwages_low = plot(subs, d[:avwages_low]; title = "Mean Wage (Low State)", xlabel = "Subsidy in Low State")
 pavwages_med = plot(subs, d[:avwages_med]; title = "Mean Wage (Medium State)", xlabel = "Subsidy in Low State")
 pavwages_high = plot(subs, d[:avwages_high]; title = "Mean Wage (High State)", xlabel = "Subsidy in Low State")
+
+pavwagebytype = plot(subs, d[:avmonopwage];label = "Average Low Wage", title = "Mean Wage by Type", xlabel = "Subsidy in Low State")
+plot!(twinx(),subs, d[:avhighwage],color = "orange", label = "Average High Wage")
+pavwagebytype_low = plot(subs, d[:avmonopwage_low];label = "Average Low Wage", title = "Mean Wage by Type (Low State)", xlabel = "Subsidy in Low State")
+plot!(twinx(), subs, d[:avhighwage_low],color = "orange", label = "Average High Wage")
+pavwagebytype_med = plot(subs, d[:avmonopwage_med];label = "Average Low Wage", title = "Mean Wage by Type (Medium State)", xlabel = "Subsidy in Low State")
+plot!(twinx(), subs, d[:avhighwage_med],color = "orange", label = "Average High Wage")
+pavwagebytype_high = plot(subs, d[:avmonopwage_high];label = "Average Low Wage", title = "Mean Wage by Type (High State)", xlabel = "Subsidy in Low State")
+plot!(twinx(), subs, d[:avhighwage_high],color = "orange" ,label = "Average High Wage")
 
 # Unemployment Rate
 pu = plot(subs, d[:mean_u]; title = "Mean Unemployment Rate", xlabel = "Subsidy in Low State")

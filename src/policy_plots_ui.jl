@@ -81,10 +81,10 @@ function policy_sims_ui(ui, uitax; wmin = 0)
         monop_med[i] = sum(wdt[med, :, :, 1])/sum(wdt[med, :, :, :])
         monop_high[i] = sum(wdt[high, :, :, 1])/sum(wdt[high, :, :, :])
 
-        avwages[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T)/T
-        avwages_low[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statet[t] ≤ statelow)/sum(low)
-        avwages_med[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statelow < statet[t] ≤ statehigh)/sum(med)
-        avwages_high[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statehigh < statet[t])/sum(high)
+        avwages[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, :]) for t in 1:T)/T
+        avwages_low[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, :]) for t in 1:T if statet[t] ≤ statelow)/sum(low)
+        avwages_med[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, :]) for t in 1:T if statelow < statet[t] ≤ statehigh)/sum(med)
+        avwages_high[i] = sum(sum(wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/sum(wdt[t, :, :, :]) for t in 1:T if statehigh < statet[t])/sum(high)
         
         
         mean_u[i] = mean(ut)
