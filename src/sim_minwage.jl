@@ -4,10 +4,10 @@ using Distributions
 using LinearAlgebra
 using Robin2011_RepPackage
 
-M = 50
+M = 100
 N = 50
 
-b = params_default()
+b = params_default(; path = "x0.txt")
 r = b.r
 
 ## Parameter Values - Change for when we estimate
@@ -56,11 +56,11 @@ F = grid[:F]
 l = grid[:l]
 
 ## Minimum Wage
-wmin = 0.75
+wmin = 0.76
 ##Production and Surplus
 p = matchprod(x, y; B = B, C = C)
 z = homeprod(x, y; α = α, B = B, C = C, z0 = z0)
-S = SminVFI(wmin, p, z, Π; β = β, λ1 = λ1, λ0 = λ0, r = r)
+S = SminVFI(wmin, p, z, Π; β = β, λ1 = λ1, λ0 = λ0, r = r, tol = 0.0001)
 Sx = S.S
 Smin = S.Smin
 

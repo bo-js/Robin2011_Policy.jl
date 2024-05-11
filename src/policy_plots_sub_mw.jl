@@ -1,11 +1,11 @@
 using Robin2011_RepPackage, Random, Plots, Base.Threads, Statistics, LinearAlgebra, Colors
 
-subs = parse.(Float64, readlines("output/sub_grid.txt"))
-sub_taxes = parse.(Float64, readlines("output/sub_taxes.txt"))
+subs = parse.(Float64, readlines("output/sub_grid_mw.txt"))
+sub_taxes = parse.(Float64, readlines("output/sub_taxes_mw.txt"))
 pushfirst!(subs, 0)
 pushfirst!(sub_taxes, 0)
 
-N = 50
+N = 100
 M = 50
 
 b = params_default(; path = "x0.txt")
@@ -38,7 +38,7 @@ x_high = maximum(x[(x_cdf .≤ (2/3))])
 p = matchprod(x, y; B = b.B, C = b.C)
 z = homeprod(x, y; B = b.B, C = b.C, α = b.α, z0 = b.z0)
 
-function policy_sims_sub(sub, subtax; wmin = 0)
+function policy_sims_sub(sub, subtax; wmin = 0, tol = 0.0001)
     
     monop = zeros(length(sub))
     monop_low = zeros(length(sub))
@@ -82,7 +82,7 @@ function policy_sims_sub(sub, subtax; wmin = 0)
 
 
     @threads for i in 1:lastindex(sub)
-        sim = optCrit([y[statelow+1], sub[i]], zeros(N, M), wmin, subtax[i]; M = M, N = N, T = T, burn = burn, draw = draw, b = b, grid = g, fullinfo = true)
+        sim = optCrit([y[statelow+1], sub[i]], zeros(N, M), wmin, subtax[i];tol = tol, M = M, N = N, T = T, burn = burn, draw = draw, b = b, grid = g, fullinfo = true)
         sel = burn+1:burn+T
         
         wd = sim.wd
@@ -190,7 +190,7 @@ function policy_sims_sub(sub, subtax; wmin = 0)
 
 end
 
-d = policy_sims_sub(subs, sub_taxes)
+d = policy_sims_sub(subs, sub_taxes; wmin = 0.76, tol = 0.008)
 
 # Proportion on Monopsony Wage
 pmonop = plot(subs, d[:monop]; title = "Proportion on Monopsony Wage", xlabel = "Subsidy in Low State")
@@ -292,7 +292,7 @@ plot(subs, swf)
 plot(subs, swf_workers)
 plot!(twinx(), subs, d[:mean_u])
 
-swf_weighted = plot()
+pswf_weighted = plot()
 weights = LinRange(0, 1, 11)
 c = colormap("Blues", length(weights))
 
