@@ -3,7 +3,7 @@ using Robin2011_RepPackage, Random, Plots, Base.Threads, Statistics
 subs = parse.(Float64, readlines("output/sub_grid.txt"))
 sub_taxes = parse.(Float64, readlines("output/sub_taxes.txt"))
 
-N = 50
+N = 100
 M = 50
 
 b = params_default(; path = "x0.txt")
@@ -81,10 +81,11 @@ function policy_sims_ui(ui, uitax; wmin = 0)
         monop_med[i] = sum(wdt[med, :, :, 1])/sum(wdt[med, :, :, :])
         monop_high[i] = sum(wdt[high, :, :, 1])/sum(wdt[high, :, :, :])
 
-        avwages[i] = mean(wagext * l)
-        avwages_low[i] = mean(wagext[low, :] * l)
-        avwages_med[i] = mean(wagext[med, :] * l)
-        avwages_high[i] = mean(wagext[high, :] * l)
+        avwages[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T)/T
+        avwages_low[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statet[t] ≤ statelow)/sum(low)
+        avwages_med[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statelow < statet[t] ≤ statehigh)/sum(med)
+        avwages_high[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statehigh < statet[t])/sum(high)
+        
         
         mean_u[i] = mean(ut)
         mean_u_low[i] = mean(ut[low])

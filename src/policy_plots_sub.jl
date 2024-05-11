@@ -5,7 +5,7 @@ sub_taxes = parse.(Float64, readlines("output/sub_taxes.txt"))
 pushfirst!(subs, 0)
 pushfirst!(sub_taxes, 0)
 
-N = 50
+N = 100
 M = 50
 
 b = params_default(; path = "x0.txt")
@@ -116,10 +116,10 @@ function policy_sims_sub(sub, subtax; wmin = 0)
         nfullsurp_med[i] = sum(wdt[med, :, :, 2])
         nfullsurp_high[i] = sum(wdt[high, :, :, 2])
 
-        avwages[i] = mean(wagext * l)
-        avwages_low[i] = mean(wagext[low, :] * l)
-        avwages_med[i] = mean(wagext[med, :] * l)
-        avwages_high[i] = mean(wagext[high, :] * l)
+        avwages[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T)/T
+        avwages_low[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statet[t] ≤ statelow)/sum(low)
+        avwages_med[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statelow < statet[t] ≤ statehigh)/sum(med)
+        avwages_high[i] = sum((wdt[t, :, :, 1] .* wd[:wmin] + wdt[t, :, :, 2] .* wd[:wmax])/wdt[t, :, :, :] for t in 1:T if statehigh < statet[t])/sum(high)
         
         mean_u[i] = mean(ut)
         mean_u_low[i] = mean(ut[low])
