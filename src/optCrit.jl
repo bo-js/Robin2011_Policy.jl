@@ -45,6 +45,7 @@ function optCrit(zsub, uizx, wmin, tax; M = 500, N =100,T = 5000, burn = 1000, d
     uxt = ones(T+burn+1, M)
     uxt[1, :] = ux[i, :]
     Sxt = repeat(Sx[i, :]', T+burn+1, 1)
+    qt = zeros(T+burn)
 
     for t = 1:T+burn
         i = min(1 + sum(draw[t] .> cumsum(Π[i, :])), N)
@@ -52,6 +53,7 @@ function optCrit(zsub, uizx, wmin, tax; M = 500, N =100,T = 5000, burn = 1000, d
         yt[t] = y[i]
         Sxt[t, :] = Sx[i, :]
         uxt[t+1, :] = 1 .- (Sxt[t, :] .> max.(Smin[i, :],0)) .* ((1 - δ) .* (1 .- uxt[t, :]) + λ0 .* uxt[t, :])
+        qt[t] = (((Sxt[t, :] .> max.(0, Smin[i, :])).*(1 .- uxt[t, :])) ⋅ l) .* (λ1 * τ) ./(1 .- uxt[t, :] ⋅ l)
     end
     ut = uxt * l
 
@@ -81,7 +83,7 @@ function optCrit(zsub, uizx, wmin, tax; M = 500, N =100,T = 5000, burn = 1000, d
             return  - swf
         end
     else
-        return (swf = swf, def = deficit, uxt = uxt, ut = ut, wd = wd, wdt = wdt, statet = statet, wagext = wagext)
+        return (swf = swf, def = deficit, uxt = uxt, ut = ut, wd = wd, wdt = wdt, statet = statet, wagext = wagext, qt = qt)
     end
 end
 

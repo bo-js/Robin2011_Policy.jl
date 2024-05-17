@@ -46,11 +46,11 @@ function find_tax_sub(sub; wmin = 0, tol = 0.0001)
     return tax
 end
 
-sub_range = LinRange(0.0005, 0.05, 100)
+sub_range = LinRange(0.0005, 0.03, 60)
 writedlm("output/sub_grid.txt", sub_range)
 sub_taxes = find_tax_sub.(sub_range)
 writedlm("output/sub_taxes.txt", sub_taxes)
 sub_range_mw = LinRange(0.0005, 0.01, 20)
 writedlm("output/sub_grid_mw.txt", sub_range_mw)
-sub_taxes_mw = find_tax_sub.(sub_range_mw; wmin = 0.76, tol = 0.01)
+sub_taxes_mw = find_tax_sub.(sub_range_mw; wmin = 0.76, tol = 0.008)
 writedlm("output/sub_taxes_mw.txt", sub_taxes_mw)
